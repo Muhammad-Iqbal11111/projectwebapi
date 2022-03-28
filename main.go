@@ -11,23 +11,25 @@ func main() {
 
 	r := gin.Default()
 	//Models
+
+	v1 := r.Group("/v1")
 	db := models.SetUpModels()
-	r.Use(func(c *gin.Context) {
+	v1.Use(func(c *gin.Context) {
 		c.Set("db", db)
 		c.Next()
 	})
-	r.GET("/", func(c *gin.Context) {
+	v1.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"message" : "golang web api",
+			"message" : "Selamat Berhasil GET",
 		})
 	})
 	//GET All Data
-	r.GET("/mahasiswa", controller.GetData)
+	v1.GET("/mahasiswa", controller.GetData)
 	//POST Data >> Create Data
-	r.POST("/mahasiswa", controller.CreateData)
+	v1.POST("/mahasiswa", controller.CreateData)
 	//Update Data >> Update Data
-	r.PUT("/mahasiswa/:nim", controller.UpdateData)
+	v1.PUT("/mahasiswa/:nim", controller.UpdateData)
 	//Delete Data >> Delete data
-	r.DELETE("/mahasiswa/:nim", controller.DeleteData)
+	v1.DELETE("/mahasiswa/:nim", controller.DeleteData)
 		r.Run()
 }

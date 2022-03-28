@@ -3,19 +3,20 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"projectwebapi/models"
 	"time"
+	"fmt"
 )
 
 type MahasiswaInput struct {
-	Id	int `json:"id"`
-	Nama string `json:"nama"`
-	Prodi string `json:"prodi"`
-	Fakultas string `json:"fakultas"`
-	Nim int `json:"nim"`
-	TahunAngkatan int `json:"tahunangkatan"`
-
+	Id	int `json:"id"  binding:"required,uuid" gorm:"primary_key"`
+	Nama string `json:"nama" binding: "required,min=5"`
+	Prodi string `json:"prodi" binding:"required"`
+	Fakultas string `json:"fakultas" binding:"required"`
+	Nim int `json:"nim" binding:"required,gte=6,number"`
+	TahunAngkatan int `json:"tahunangkatan" binding:"required,number"`
 }
 
 //GET Data
@@ -35,7 +36,25 @@ func CreateData(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	//validasi inputan
 	var dataInput MahasiswaInput
-	if err := c.ShouldBindJSON(&dataInput); err != nil {
+	err := c.ShouldBindJSON(&dataInput) 
+	if err != nil {
+		errorMessages := []string{}
+		for _,e := range err.(validator.ValidationErrors){
+			switch  e.Tag() {
+			case "required":
+				report := fmt.Sprintf("%s is required", e.Field())
+				errorMessages = append (errorMessages, report)
+			case "min":
+				report := fmt.Sprintf("%s must be more than 5 characters", e.Field())
+				errorMessages = append (errorMessages, report)
+			case "number":
+				report := fmt.Sprintf("%s must be numbers", e.Field())
+				errorMessages = append (errorMessages, report)
+			case "gte":
+				report := fmt.Sprintf("%s must be more than 5", e.Field())
+				errorMessages = append (errorMessages, report)
+			}
+		}
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error" : err.Error(),
 		})
@@ -77,7 +96,25 @@ func UpdateData(c *gin.Context) {
 
 	//validasi inputan
 	var dataInput MahasiswaInput
-	if err := c.ShouldBindJSON(&dataInput); err != nil {
+	err := c.ShouldBindJSON(&dataInput); 
+	if err != nil {
+		errorMessages := []string{}
+		for _,e := range err.(validator.ValidationErrors){
+			switch  e.Tag() {
+			case "required":
+				report := fmt.Sprintf("%s is required", e.Field())
+				errorMessages = append (errorMessages, report)
+			case "min":
+				report := fmt.Sprintf("%s must be more than 5 characters", e.Field())
+				errorMessages = append (errorMessages, report)
+			case "number":
+				report := fmt.Sprintf("%s must be numbers", e.Field())
+				errorMessages = append (errorMessages, report)
+			case "gte":
+				report := fmt.Sprintf("%s must be more than 5", e.Field())
+				errorMessages = append (errorMessages, report)
+			}
+		}
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error" : err.Error(),
 		})
@@ -113,5 +150,6 @@ func DeleteData(c *gin.Context) {
 	//	menampilkan hasil
 	c.JSON(http.StatusOK, gin.H{
 		"Data" : true,
+		"Message": "Data berhasil dihapus",
 	})
 }
